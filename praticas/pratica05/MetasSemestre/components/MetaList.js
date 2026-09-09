@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   FlatList,
   Pressable,
@@ -12,9 +13,11 @@ export default function MetaList({
   onDelete,
   onToggle,
 }) {
+
   if (metas.length === 0) {
     return (
       <View style={styles.emptyContainer}>
+
         <Text style={styles.emptyIcon}>
           📚
         </Text>
@@ -26,67 +29,6 @@ export default function MetaList({
         <Text style={styles.emptyText}>
           Adicione sua primeira meta de estudo!
         </Text>
-      </View>
-    );
-  }
-
-  function renderMeta({ item }) {
-    return (
-      <View
-        style={[
-          styles.card,
-          item.concluida && styles.cardCompleted,
-        ]}
-      >
-
-        <Pressable
-          onPress={() => onToggle(item.id)}
-          android_ripple={{ color: '#5B4BDB22' }}
-          style={styles.metaContent}
-        >
-
-          <View
-            style={[
-              styles.checkbox,
-              item.concluida && styles.checkboxCompleted,
-            ]}
-          >
-            {item.concluida && (
-              <Text style={styles.check}>
-                ✓
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.textContainer}>
-            <Text
-              style={[
-                styles.metaText,
-                item.concluida && styles.metaTextCompleted,
-              ]}
-            >
-              {item.texto}
-            </Text>
-
-            <Text style={styles.date}>
-              Criada em{' '}
-              {new Date(item.criadaEm).toLocaleDateString(
-                'pt-BR'
-              )}
-            </Text>
-          </View>
-
-        </Pressable>
-
-        <Pressable
-          onPress={() => onDelete(item.id)}
-          android_ripple={{ color: '#FF000022' }}
-          style={styles.deleteButton}
-        >
-          <Text style={styles.deleteText}>
-            ×
-          </Text>
-        </Pressable>
 
       </View>
     );
@@ -95,10 +37,78 @@ export default function MetaList({
   return (
     <FlatList
       data={metas}
-      keyExtractor={(item) => item.id}
-      renderItem={renderMeta}
+      keyExtractor={(item) => String(item.id)}
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
+
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+
+          {/* META */}
+          <Pressable
+            onPress={() => onToggle(item.id)}
+            style={styles.metaButton}
+            android_ripple={{
+              color: '#DDDDDD',
+            }}
+          >
+
+            <View
+              style={[
+                styles.checkbox,
+                item.concluida &&
+                  styles.checkboxConcluida,
+              ]}
+            >
+              {item.concluida && (
+                <Text style={styles.check}>
+                  ✓
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.textContainer}>
+
+              <Text
+                style={[
+                  styles.metaText,
+                  item.concluida &&
+                    styles.metaConcluida,
+                ]}
+              >
+                {item.texto}
+              </Text>
+
+              <Text style={styles.data}>
+                Criada em{' '}
+                {item.criadaEm
+                  ? new Date(
+                      item.criadaEm
+                    ).toLocaleDateString('pt-BR')
+                  : 'Data não informada'}
+              </Text>
+
+            </View>
+
+          </Pressable>
+
+          {/* BOTÃO EXCLUIR */}
+          <Pressable
+            onPress={() => {
+              onDelete(item.id);
+            }}
+            style={styles.deleteButton}
+            android_ripple={{
+              color: '#FFCCCC',
+            }}
+          >
+            <Text style={styles.deleteText}>
+              🗑️
+            </Text>
+          </Pressable>
+
+        </View>
+      )}
     />
   );
 }
@@ -113,50 +123,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
     marginBottom: 12,
-    padding: 15,
+    padding: 8,
+
     flexDirection: 'row',
     alignItems: 'center',
+
+    elevation: 3,
 
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 3,
+      height: 2,
     },
     shadowOpacity: 0.08,
-    shadowRadius: 6,
-
-    elevation: 3,
+    shadowRadius: 5,
   },
 
-  cardCompleted: {
-    opacity: 0.7,
-  },
-
-  metaContent: {
+  metaButton: {
     flex: 1,
+
     flexDirection: 'row',
     alignItems: 'center',
+
+    padding: 8,
+    borderRadius: 12,
+
     overflow: 'hidden',
   },
 
   checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 30,
+    height: 30,
+
+    borderRadius: 9,
+
     borderWidth: 2,
     borderColor: '#5B4BDB',
+
     alignItems: 'center',
     justifyContent: 'center',
+
     marginRight: 12,
   },
 
-  checkboxCompleted: {
+  checkboxConcluida: {
     backgroundColor: '#5B4BDB',
   },
 
   check: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 
@@ -170,36 +186,39 @@ const styles = StyleSheet.create({
     color: '#292929',
   },
 
-  metaTextCompleted: {
+  metaConcluida: {
     textDecorationLine: 'line-through',
-    color: '#888888',
-  },
-
-  date: {
-    marginTop: 5,
-    fontSize: 11,
     color: '#999999',
   },
 
+  data: {
+    fontSize: 11,
+    color: '#999999',
+    marginTop: 5,
+  },
+
   deleteButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 50,
+    height: 50,
+
+    borderRadius: 14,
+
     alignItems: 'center',
     justifyContent: 'center',
+
     overflow: 'hidden',
   },
 
   deleteText: {
-    fontSize: 25,
-    color: '#E05252',
-    fontWeight: '300',
+    fontSize: 21,
   },
 
   emptyContainer: {
     flex: 1,
+
     alignItems: 'center',
     justifyContent: 'center',
+
     paddingHorizontal: 40,
   },
 
@@ -216,7 +235,9 @@ const styles = StyleSheet.create({
 
   emptyText: {
     marginTop: 7,
+
     textAlign: 'center',
+
     fontSize: 14,
     color: '#888888',
   },

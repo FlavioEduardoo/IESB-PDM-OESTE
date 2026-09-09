@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import {
   Alert,
   Image,
@@ -8,6 +9,7 @@ import {
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -21,29 +23,39 @@ const CHAVE_METAS = '@metas_semestre';
 export default function App() {
   const [textoMeta, setTextoMeta] = useState('');
   const [metas, setMetas] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
-  // CARREGAR METAS AO ABRIR O APP
+  // CARREGAR METAS
   useEffect(() => {
     async function carregarMetas() {
       try {
-        const dadosSalvos = await AsyncStorage.getItem(CHAVE_METAS);
+        const dadosSalvos = await AsyncStorage.getItem(
+          CHAVE_METAS
+        );
 
-        if (dadosSalvos !== null) {
-          setMetas(JSON.parse(dadosSalvos));
+        if (dadosSalvos) {
+          const metasSalvas = JSON.parse(dadosSalvos);
+          setMetas(metasSalvas);
         }
       } catch (error) {
         Alert.alert(
           'Erro',
           'Não foi possível carregar suas metas.'
         );
+      } finally {
+        setCarregando(false);
       }
     }
 
     carregarMetas();
   }, []);
 
-  // SALVAR METAS SEMPRE QUE A LISTA FOR ALTERADA
+  // SALVAR METAS
   useEffect(() => {
+    if (carregando) {
+      return;
+    }
+
     async function salvarMetas() {
       try {
         await AsyncStorage.setItem(
@@ -59,12 +71,13 @@ export default function App() {
     }
 
     salvarMetas();
-  }, [metas]);
+  }, [metas, carregando]);
 
+  // ADICIONAR META
   function adicionarMeta() {
     const texto = textoMeta.trim();
 
-    if (texto.length === 0) {
+    if (texto === '') {
       Alert.alert(
         'Meta inválida',
         'Digite uma meta antes de adicionar.'
@@ -79,47 +92,36 @@ export default function App() {
       concluida: false,
     };
 
-    setMetas((metasAtuais) => [
-      ...metasAtuais,
-      novaMeta,
-    ]);
+    setMetas((metasAtuais) => {
+      return [...metasAtuais, novaMeta];
+    });
 
     setTextoMeta('');
   }
 
+  // REMOVER META
   function removerMeta(id) {
-    Alert.alert(
-      'Remover meta',
-      'Tem certeza que deseja remover esta meta?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: () => {
-            setMetas((metasAtuais) =>
-              metasAtuais.filter((meta) => meta.id !== id)
-            );
-          },
-        },
-      ]
-    );
+    setMetas((metasAtuais) => {
+      return metasAtuais.filter(
+        (meta) => String(meta.id) !== String(id)
+      );
+    });
   }
 
+  // MARCAR / DESMARCAR CONCLUÍDA
   function alternarConclusao(id) {
-    setMetas((metasAtuais) =>
-      metasAtuais.map((meta) =>
-        meta.id === id
-          ? {
-              ...meta,
-              concluida: !meta.concluida,
-            }
-          : meta
-      )
-    );
+    setMetas((metasAtuais) => {
+      return metasAtuais.map((meta) => {
+        if (String(meta.id) === String(id)) {
+          return {
+            ...meta,
+            concluida: !meta.concluida,
+          };
+        }
+
+        return meta;
+      });
+    });
   }
 
   const pendentes = metas.filter(
@@ -134,8 +136,11 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
 
+        {/* CABEÇALHO */}
         <View style={styles.header}>
+
           <View style={styles.headerTop}>
+
             <Image
               source={require('./assets/logo.png')}
               style={styles.logo}
@@ -150,9 +155,12 @@ export default function App() {
                 Organize seus estudos
               </Text>
             </View>
+
           </View>
 
+          {/* CONTADORES */}
           <View style={styles.stats}>
+
             <View style={styles.statBox}>
               <Text style={styles.statNumber}>
                 {pendentes}
@@ -174,15 +182,19 @@ export default function App() {
                 Concluídas
               </Text>
             </View>
+
           </View>
+
         </View>
 
+        {/* INPUT */}
         <MetaInput
           value={textoMeta}
           onChangeText={setTextoMeta}
           onAdd={adicionarMeta}
         />
 
+        {/* LISTA */}
         <MetaList
           metas={metas}
           onDelete={removerMeta}
@@ -240,12 +252,11 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
   },
 
   statBox: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
   },
 
   statNumber: {
