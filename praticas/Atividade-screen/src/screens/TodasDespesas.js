@@ -1,73 +1,63 @@
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, TextInput, StyleSheet, useColorScheme } from 'react-native';
 import DespesaSaida from '../components/despesa/DespesaSaida';
 import FiltroCategoria from '../components/despesa/FiltroCategoria';
+import { useExpenses } from '../store/expenses-context';
+import useDebounce from '../hooks/useDebounce';
+import { getColors } from '../constants/theme';
 
 function TodasDespesas(){
+    const { expenses } = useExpenses();
+    const colors = getColors(useColorScheme());
 
-    const [categoriaFiltro, setCategoriaFiltro] = useState('');
+    const [search, setSearch] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
 
-    const DUMMY_DESPESAS = [
-        {
-            id: '1',
-            descricao: 'Conta de luz',
-            valor: 100.99,
-            data: new Date(2025, 2, 11),
-            categoria: 'Contas'
-        },
-        {
-            id: '2',
-            descricao: 'Conta de Água',
-            valor: 40.99,
-            data: new Date(2025, 4, 10),
-            categoria: 'Contas'
-        },
-        {
-            id: '3',
-            descricao: 'Supermercado',
-            valor: 230.5,
-            data: new Date(2025, 5, 2),
-            categoria: 'Alimentação'
-        },
-        {
-            id: '4',
-            descricao: 'Uber',
-            valor: 27.9,
-            data: new Date(2025, 5, 8),
-            categoria: 'Transporte'
-        },
-        {
-            id: '5',
-            descricao: 'Cinema',
-            valor: 45,
-            data: new Date(2025, 5, 14),
-            categoria: 'Lazer'
-        }
-    ]
+    const debouncedSearch = useDebounce(search, 300);
 
-    function filtrarPorCategoria(despesas, categoria) {
-        if (!categoria) {
-            return despesas;
-        }
+    const filteredExpenses = useMemo(() => {
+        const term = debouncedSearch.trim().toLowerCase();
 
-        return despesas.filter(despesa => despesa.categoria === categoria);
-    }
+        return expenses.filter((expense) => {
+            const matchesCategory = !categoryFilter || expense.category === categoryFilter;
+            const matchesSearch = expense.description.toLowerCase().includes(term);
 
-    const despesasFiltradas = filtrarPorCategoria(DUMMY_DESPESAS, categoriaFiltro);
+            return matchesCategory && matchesSearch;
+        });
+    }, [expenses, debouncedSearch, categoryFilter]);
 
     return (
-        <View style={{ flex: 1 }}>
-            <FiltroCategoria
-                categoriaSelecionada={categoriaFiltro}
-                onSelecionar={setCategoriaFiltro}
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <TextInput
+                style={[
+                    styles.search,
+                    { borderColor: colors.border, color: colors.text, backgroundColor: colors.card },
+                ]}
+                placeholder="Buscar por descrição"
+                placeholderTextColor={colors.muted}
+                value={search}
+                onChangeText={setSearch}
             />
 
+            <FiltroCategoria selected={categoryFilter} onSelect={setCategoryFilter} />
+
             <DespesaSaida
-                despesas={despesasFiltradas}
-                periodo={categoriaFiltro ? 'Total - ' + categoriaFiltro : 'Total'}
+                despesas={filteredExpenses}
+                periodo={categoryFilter ? 'Total - ' + categoryFilter : 'Total'}
             />
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1 },
+    search: {
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+        marginHorizontal: 8,
+        marginTop: 8,
+    },
+});
 
 export default TodasDespesas

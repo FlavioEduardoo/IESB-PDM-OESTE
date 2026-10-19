@@ -1,22 +1,27 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { CATEGORIAS } from '../../constants/categorias';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
+import { CATEGORIES } from '../../constants/categories';
+import { getColors } from '../../constants/theme';
 
-// categoriaSelecionada === '' significa "Todas"
-function FiltroCategoria({ categoriaSelecionada, onSelecionar }) {
-    const opcoes = ['', ...CATEGORIAS];
+// selected === '' significa "Todas"
+function FiltroCategoria({ selected, onSelect }) {
+    const colors = getColors(useColorScheme());
+    const options = ['', ...CATEGORIES];
 
     return (
         <View style={styles.container}>
-            {opcoes.map((cat) => {
-                const ativa = categoriaSelecionada === cat;
+            {options.map((cat) => {
+                const active = selected === cat;
 
                 return (
                     <Pressable
                         key={cat || 'todas'}
-                        onPress={() => onSelecionar(cat)}
-                        style={[styles.chip, ativa && styles.chipAtivo]}
+                        onPress={() => onSelect(cat)}
+                        style={[
+                            styles.chip,
+                            { backgroundColor: active ? colors.primary : colors.tag },
+                        ]}
                     >
-                        <Text style={ativa && styles.textoAtivo}>
+                        <Text style={{ color: active ? colors.onPrimary : colors.tagText }}>
                             {cat || 'Todas'}
                         </Text>
                     </Pressable>
@@ -27,30 +32,12 @@ function FiltroCategoria({ categoriaSelecionada, onSelecionar }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        margin: 8,
-    },
-
+    container: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 8 },
     chip: {
         paddingHorizontal: 12,
         paddingVertical: 6,
         margin: 4,
         borderRadius: 16,
-        backgroundColor: '#e8e8e8',
-        borderWidth: 1,
-        borderColor: '#bbb',
-    },
-
-    chipAtivo: {
-        backgroundColor: '#3e04c3',
-        borderColor: '#3e04c3',
-    },
-
-    textoAtivo: {
-        color: '#fff',
-        fontWeight: 'bold',
     },
 });
 

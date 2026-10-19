@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
+import { useColorScheme } from 'react-native';
 
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,11 +11,12 @@ import TodasDespesas from './src/screens/TodasDespesas';
 import GerenciarDespesa from './src/screens/GerenciarDespesa';
 
 import IconButton from './src/components/IconButton';
+import { ExpensesContextProvider } from './src/store/expenses-context';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-function BottomTabScreen({ navigation }) {
+function BottomTabScreen() {
 
     return (
         <Tab.Navigator
@@ -46,11 +48,7 @@ function BottomTabScreen({ navigation }) {
                     tabBarLabel: 'Recentes',
 
                     tabBarIcon: ({ color, size }) => (
-                        <Ionicons
-                            name="hourglass"
-                            size={size}
-                            color={color}
-                        />
+                        <Ionicons name="hourglass" size={size} color={color} />
                     ),
                 }}
             />
@@ -63,11 +61,7 @@ function BottomTabScreen({ navigation }) {
                     tabBarLabel: 'Todas',
 
                     tabBarIcon: ({ color, size }) => (
-                        <Ionicons
-                            name="wallet-outline"
-                            size={size}
-                            color={color}
-                        />
+                        <Ionicons name="wallet-outline" size={size} color={color} />
                     ),
                 }}
             />
@@ -77,34 +71,37 @@ function BottomTabScreen({ navigation }) {
 }
 
 export default function App() {
+    const scheme = useColorScheme();
 
     return (
         <>
             <StatusBar style="auto" />
 
-            <NavigationContainer>
+            <ExpensesContextProvider>
+                <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
 
-                <Stack.Navigator>
+                    <Stack.Navigator>
 
-                    <Stack.Screen
-                        name="Despesas"
-                        component={BottomTabScreen}
-                        options={{
-                            headerShown: false
-                        }}
-                    />
+                        <Stack.Screen
+                            name="Despesas"
+                            component={BottomTabScreen}
+                            options={{
+                                headerShown: false
+                            }}
+                        />
 
-                    <Stack.Screen
-                        name="GerenciarDespesa"
-                        component={GerenciarDespesa}
-                        options={{
-                            title: 'Gerenciar Despesa'
-                        }}
-                    />
+                        <Stack.Screen
+                            name="GerenciarDespesa"
+                            component={GerenciarDespesa}
+                            options={{
+                                title: 'Gerenciar Despesa'
+                            }}
+                        />
 
-                </Stack.Navigator>
+                    </Stack.Navigator>
 
-            </NavigationContainer>
+                </NavigationContainer>
+            </ExpensesContextProvider>
         </>
     );
 }

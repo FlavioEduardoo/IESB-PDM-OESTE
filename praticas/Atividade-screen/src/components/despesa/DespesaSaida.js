@@ -4,7 +4,7 @@ import DespesaLista from './DespesaLista';
 
 function DespesaSaida({ despesas, periodo }) {
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <DespesaSumario despesas={despesas} periodo={periodo} />
             <DespesaLista despesas={despesas} />
         </View>

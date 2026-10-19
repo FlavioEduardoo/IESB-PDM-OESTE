@@ -1,41 +1,30 @@
-import React from 'react';
+import { useMemo } from 'react';
+import { View, useColorScheme } from 'react-native';
 import DespesaSaida from '../components/despesa/DespesaSaida';
+import { useExpenses } from '../store/expenses-context';
+import { getColors } from '../constants/theme';
 
 function DespesasRecentes() {
+    const { expenses } = useExpenses();
+    const colors = getColors(useColorScheme());
 
-    function filtrarUltimos7Dias(despesas) {
-        const hoje = new Date();
+    const recentExpenses = useMemo(() => {
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
 
-        const seteDiasAtras = new Date();
-        seteDiasAtras.setDate(hoje.getDate() - 7);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
 
-        return despesas.filter(despesa => {
-            return despesa.data >= seteDiasAtras && despesa.data <= hoje;
+        return expenses.filter((expense) => {
+            return expense.date >= sevenDaysAgo && expense.date <= endOfToday;
         });
-    }
-
-    const DUMMY_DESPESAS = [
-        {
-            id: '1',
-            descricao: 'Conta de luz',
-            valor: 100.99,
-            data: new Date(),
-            categoria: 'Contas'
-        },
-        {
-            id: '2',
-            descricao: 'Conta de Agua',
-            valor: 40.99,
-            data: new Date(),
-            categoria: 'Contas'
-        }
-    ];
+    }, [expenses]);
 
     return (
-        <DespesaSaida
-            despesas={filtrarUltimos7Dias(DUMMY_DESPESAS)}
-            periodo="Últimos 7 dias"
-        />
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <DespesaSaida despesas={recentExpenses} periodo="Últimos 7 dias" />
+        </View>
     );
 }
 
